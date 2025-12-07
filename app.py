@@ -5,7 +5,7 @@ import json
 
 st.set_page_config(page_title="English Tool", layout="wide", initial_sidebar_state="expanded")
 
-st.sidebar.markdown("##Configuration")
+st.sidebar.markdown("Configuration")
 api_key = st.sidebar.text_input("Gemini API Key", type="password", help="Enter your Google Gemini API key")
 
 if api_key:
@@ -53,9 +53,9 @@ with tab1:
                     
                     sdict_translate = json.loads(translate_text)
                     
-                    st.markdown('## Results:')
+                    st.markdown('Results:')
             
-                    st.markdown('### Thai Translation:')
+                    st.markdown('Thai Translation:')
                     
                     st.success(sdict_translate['translation'])
 
@@ -73,7 +73,7 @@ with tab1:
                     st.error(f"❌ Error: {str(e)}")
 
 with tab2:
-    st.markdown("### Grammar Checker")
+    st.markdown("Grammar Checker")
     grammar_input = st.text_area("Enter text to check:", "Your text here", key="tab2_input")
 
     if st.button('Check Grammar', key="tab2_btn"):
@@ -113,11 +113,11 @@ Return only JSON with no explanation outside JSON.
 
                     st.success("✅ Grammar Check Complete!")
 
-                    st.markdown("###Corrected Sentence")
+                    st.markdown("Corrected Sentence")
                     st.write(result['corrected'])
 
                     if result.get('errors'):
-                        st.markdown("### Errors Found:")
+                        st.markdown("Errors Found:")
                         errors_df = pd.DataFrame(result['errors'])
                         st.dataframe(errors_df, use_container_width=True)
 
