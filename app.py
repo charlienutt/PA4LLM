@@ -75,7 +75,7 @@ with tab1:
 with tab2:
     st.markdown("### Grammar Checker")
     grammar_input = st.text_area("Enter text to check:", "Your text here", key="tab2_input")
-    
+
     if st.button('Check Grammar', key="tab2_btn"):
         if not api_key:
             st.error("❌ Please enter your Gemini API key in the sidebar first!")
@@ -84,28 +84,44 @@ with tab2:
         else:
             with st.spinner("Checking grammar..."):
                 try:
-                    promt_Grammar = """Act as a Grammar checker.
-                                        You will be given a sentence or paragraph with error.
-                                        Identify and correct any grammatical errors.
-                                        Return the corrected sentence or paragraph in JSON format with the following structure:"""
-                    
-                    response = model.generate_content(promt_Grammar)
-                    response_text = response.text
-                    
+                    prompt_grammar = f"""
+You are a professional English grammar checker.
+Analyze the sentence or paragraph and return results in JSON ONLY.
+
+Format output MUST be:
+{{
+    "corrected": "corrected sentence",
+    "errors": [
+        {{"original": "word/phrase", "suggestion": "suggested correction", "reason": "explanation"}}
+    ]
+}}
+
+Text to check: {grammar_input}
+
+Return only JSON with no explanation outside JSON.
+"""
+
+                    response = model.generate_content(prompt_grammar)
+                    response_text = response.text.strip()
+
                     if "```json" in response_text:
                         response_text = response_text.split("```json")[1].split("```")[0]
                     elif "```" in response_text:
                         response_text = response_text.split("```")[1].split("```")[0]
-                    
+
                     result = json.loads(response_text)
-                    
+
                     st.success("✅ Grammar Check Complete!")
-                      
-                    if result['errors']:
-                        st.markdown("### 🔴 Errors Found:")
+
+                    st.markdown("###Corrected Sentence")
+                    st.write(result['corrected'])
+
+                    if result.get('errors'):
+                        st.markdown("### Errors Found:")
                         errors_df = pd.DataFrame(result['errors'])
                         st.dataframe(errors_df, use_container_width=True)
-                        
+
+                        # Export CSV
                         csv_errors = errors_df.to_csv(index=False)
                         st.download_button(
                             label="📥 Download Errors as CSV",
@@ -114,10 +130,13 @@ with tab2:
                             mime="text/csv"
                         )
                     else:
-                        st.info("No grammatical errors found! Your text is correct.")
-                    
+                        st.info("No errors found!")
+
                 except json.JSONDecodeError as e:
-                    st.error(f"❌ Error parsing response: {str(e)}")
+                    st.error(f"❌ JSON Response invalid (model didn't return valid JSON): {str(e)}")
+                    st.write("📌 Print model raw output for debugging:")
+                    st.code(response_text)
                 except Exception as e:
                     st.error(f"❌ Error: {str(e)}")
+
 
